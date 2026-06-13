@@ -6,6 +6,13 @@ You can see the blog post here [Split-flap display with CSS and JavaScript](http
 
 Forks, pull requests and code critiques are welcome!
 
+#### Included examples ####
+
+- `examples/basic.html` - minimal board demo
+- `examples/text-display.html` - keyboard-driven text demo
+- `examples/single-digit-clock.html` and `examples/double-digit-clock.html` - clock demos
+- `examples/local-solari-display.html` - the packaged local app page with themes, playback controls, and sound toggle
+
 #### Using the code ####
 
 Include SolariDisplay.[min.]js and SolariDisplay.css. 
@@ -80,6 +87,8 @@ window.addEventListener( 'load', function() { // once the page loads
 
 }, false );
 ```
+
+The local app example in this workspace also lives at `examples/local-solari-display.html`, and it is self-contained inside `examples/` via `examples/local-solari-display.css`, `examples/local-solari-display.js`, and `examples/one_flip.mp3`. It still loads the Solari library source from `src/SolariBoard.js`.
 
 #### License ####
 

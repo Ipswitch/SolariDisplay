@@ -9,7 +9,7 @@
 	-moz-transform-style: preserve-3d;
 }
 .display{ position: absolute; left: 50%; top: 50%;}
-.segments{ list-style-type: none; float: left; padding: 0;  padding: 10px; border: 20px solid #b70000; border-radius: 10px;
+.segments{ list-style-type: none; float: left; padding: 10px; border: 0 solid transparent; border-radius: 10px;
 	-webkit-transform-style: preserve-3d;
 	-moz-transform-style: preserve-3d;
 }
