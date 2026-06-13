@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Local Solari Display | SolariDisplay Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="local-solari-display.css" />
+    <link rel="stylesheet" href="../build/SolariBoard.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <h1>Solari Board</h1>
+        <p>Type a message and watch it flip.</p>
+      </header>
+      <main class="main">
+        <div id="board" class="solari-board"></div>
+        <form id="message-form" class="message-form">
+          <label for="message-input">Message</label>
+          <input id="message-input" type="text" placeholder="WELCOME ABOARD" />
+          <button type="submit">Update</button>
+          <div class="speed-control">
+            <label for="speed-input">Speed</label>
+            <button type="button" id="speed-decrease">-</button>
+            <input
+              id="speed-input"
+              type="number"
+              min="0.25"
+              max="8"
+              step="0.25"
+              value="4"
+            />
+            <button type="button" id="speed-increase">+</button>
+          </div>
+          <div class="height-control">
+            <label for="height-input">Height</label>
+            <button type="button" id="height-decrease">-</button>
+            <input
+              id="height-input"
+              type="number"
+              min="15"
+              max="180"
+              step="5"
+              value="50"
+            />
+            <button type="button" id="height-increase">+</button>
+          </div>
+          <div class="theme-control">
+            <label for="theme-input">Theme</label>
+            <select id="theme-input">
+              <option value="original" selected>Original</option>
+              <option value="amber">Old Amber</option>
+              <option value="modern">Modern</option>
+              <option value="vintage">Vintage</option>
+            </select>
+          </div>
+          <div class="playback-control">
+            <label>Playback</label>
+            <label>
+              <input type="radio" name="playback-mode" value="all-at-once" checked />
+              All at once
+            </label>
+            <label>
+              <input type="radio" name="playback-mode" value="sequential" />
+              Sequential (1.5s apart)
+            </label>
+          </div>
+          <div class="sound-control">
+            <label>
+              <input type="checkbox" id="sound-toggle" checked />
+              Sound
+            </label>
+          </div>
+        </form>
+      </main>
+    </div>
+
+    <script src="../src/SolariBoard.js"></script>
+    <script type="module" src="local-solari-display.js"></script>
+  </body>
+</html>
