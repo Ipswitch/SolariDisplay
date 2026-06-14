@@ -58,7 +58,7 @@ window.addEventListener( 'load', function() { // once the page loads
 		format - an array of either a single character or an array of characters. 
 			The length of this format array is the number of segments.
 			There are several defines ready to use:
-				CTR.SOLARIVALUES.letter: space, punctuation, common currency symbols, and A to Z
+				CTR.SOLARIVALUES.letter: space, punctuation, common currency symbols, digits 0-9, and A to Z
 				CTR.SOLARIVALUES.number: 0 to 9
 				CTR.SOLARIVALUES.hour: 00 to 23
 				CTR.SOLARIVALUES.minute: 00 to 59

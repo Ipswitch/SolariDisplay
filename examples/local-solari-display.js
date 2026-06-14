@@ -3,6 +3,14 @@
 const FLIP_URL = 'one_flip.mp3';
 const POOL_SIZE = 6;
 const MIN_INTERVAL_MS = 40;
+const DEFAULT_MESSAGE = `USD$    1.0000
+GBP£    0.7461
+EUR€    0.8645
+CNY¥    6.7817
+JPY¥  160.2327
+INR₹   95.2997
+KRW₩ 1517.2530
+AS OF 2026-06-14 UTC`;
 
 let audioPool = [];
 let soundEnabled = false;
@@ -75,7 +83,7 @@ window.addEventListener('load', () => {
   let currentPlaybackMode = 'all-at-once';
   let sequentialTimeoutId = null;
   let boardRows = [];
-  let lastMessageText = 'HELLO WORLD';
+  let lastMessageText = DEFAULT_MESSAGE;
 
   const BASE_SEGMENT_WIDTH = 70;
   const BASE_SEGMENT_HEIGHT = 120;
@@ -178,7 +186,7 @@ window.addEventListener('load', () => {
   };
 
   const setMessage = (text) => {
-    const upper = (text || 'HELLO WORLD').toString().toUpperCase();
+    const upper = (text || DEFAULT_MESSAGE).toString().toUpperCase();
     lastMessageText = upper;
     const segmentCell = getSegmentWidth(currentLetterHeight) + SEGMENT_GAP;
     const boardPad = parseFloat(getComputedStyle(boardContainer).paddingLeft) + parseFloat(getComputedStyle(boardContainer).paddingRight);
@@ -234,7 +242,7 @@ window.addEventListener('load', () => {
 
   form.addEventListener('submit', event => {
     event.preventDefault();
-    const text = input.value || 'HELLO WORLD';
+    const text = input.value || DEFAULT_MESSAGE;
 
     if (!soundEnabled) {
       initSoundPool();
@@ -269,5 +277,6 @@ window.addEventListener('load', () => {
   });
 
   applyTheme(currentTheme);
-  setMessage('HELLO WORLD');
+  if (input) input.value = DEFAULT_MESSAGE;
+  setMessage(DEFAULT_MESSAGE);
 });
