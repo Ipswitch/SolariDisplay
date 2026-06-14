@@ -87,17 +87,19 @@ CTR.SolariSegment = function( settings ) {
 			
 		} else {
 
-			var time = Date.now();
-			_angle += ( _speed * ( time - _startTime ) );
-			_startTime = time;
-			if( _angle >= 180 ) _angle = 180;
+			if( _angle < 180 ) {
+				var time = Date.now();
+				_angle += ( _speed * ( time - _startTime ) );
+				_startTime = time;
+				if( _angle >= 180 ) _angle = 180;
 
-			_back.textContent = _values[ _currentValue ];
-			_flipBack.textContent = _values[ _currentValue ];
-			_front.textContent = _values[ _currentValue ];
-			_flipFront.textContent = _values[ _currentValue ];
+				_back.textContent = _values[ _currentValue ];
+				_flipBack.textContent = _values[ _currentValue ];
+				_front.textContent = _values[ _currentValue ];
+				_flipFront.textContent = _values[ _currentValue ];
 
-			update = true;
+				update = true;
+			}
 
 		}
 

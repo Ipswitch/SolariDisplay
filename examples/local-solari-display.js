@@ -83,6 +83,7 @@ window.addEventListener('load', () => {
   let currentPlaybackMode = 'all-at-once';
   let sequentialTimeoutId = null;
   let boardRows = [];
+  let lastRenderedRowCount = 1;
   let lastMessageText = DEFAULT_MESSAGE;
 
   const BASE_SEGMENT_WIDTH = 70;
@@ -197,9 +198,50 @@ window.addEventListener('load', () => {
       if (!line.trim()) return [' '];
       return wordWrap(line, cols);
     });
+    lastRenderedRowCount = Math.max(1, lines.length);
     const sequential = currentPlaybackMode === 'sequential';
     rebuildBoard(lines, sequential);
     applyTheme(currentTheme);
+  };
+
+  const stopSoundWatchdog = () => {
+    if (flipWatchdogTimeout) {
+      clearTimeout(flipWatchdogTimeout);
+      flipWatchdogTimeout = null;
+    }
+  };
+
+  const startSoundWatchdog = () => {
+    if (!soundEnabled) return;
+
+    stopSoundWatchdog();
+
+    const startAt = performance.now();
+    lastSegmentUpdateAt = startAt;
+    const sequentialLeadMs = currentPlaybackMode === 'sequential'
+      ? Math.max(0, lastRenderedRowCount - 1) * 1500
+      : 0;
+    const hardStopMs = sequentialLeadMs + 9000;
+
+    const checkFlips = () => {
+      const now = performance.now();
+      const elapsed = now - startAt;
+      const afterLastRowStart = elapsed >= sequentialLeadMs;
+      const inactivityThresholdMs = afterLastRowStart
+        ? 260
+        : (currentPlaybackMode === 'sequential' ? 1700 : 260);
+
+      if (elapsed > hardStopMs || (now - lastSegmentUpdateAt) > inactivityThresholdMs) {
+        flipWatchdogTimeout = null;
+        return;
+      }
+
+      playFlipSound();
+      flipWatchdogTimeout = setTimeout(checkFlips, 85);
+    };
+
+    playFlipSound();
+    flipWatchdogTimeout = setTimeout(checkFlips, 85);
   };
 
   speedInput?.addEventListener('change', applySpeedFromInput);
@@ -238,6 +280,7 @@ window.addEventListener('load', () => {
 
   soundToggle?.addEventListener('change', event => {
     soundEnabled = event.target.checked;
+    if (!soundEnabled) stopSoundWatchdog();
   });
 
   form.addEventListener('submit', event => {
@@ -251,29 +294,7 @@ window.addEventListener('load', () => {
 
     if (sequentialTimeoutId) clearTimeout(sequentialTimeoutId);
     setMessage(text);
-
-    const chars = Math.max(1, Math.min(text.length, 20));
-    const maxDurationMs = Math.round(chars * 300);
-    const startAt = performance.now();
-    lastSegmentUpdateAt = startAt;
-
-    if (flipWatchdogTimeout) clearTimeout(flipWatchdogTimeout);
-
-    const checkFlips = () => {
-      const now = performance.now();
-      const sinceLastUpdate = now - lastSegmentUpdateAt;
-      const elapsed = now - startAt;
-
-      if (sinceLastUpdate > 150 || elapsed > maxDurationMs) {
-        flipWatchdogTimeout = null;
-        return;
-      }
-
-      playFlipSound();
-      flipWatchdogTimeout = setTimeout(checkFlips, 80);
-    };
-
-    flipWatchdogTimeout = setTimeout(checkFlips, 80);
+    startSoundWatchdog();
   });
 
   applyTheme(currentTheme);
