@@ -62,13 +62,15 @@ window.addEventListener('load', () => {
   const heightDecrease = document.getElementById('height-decrease');
   const heightIncrease = document.getElementById('height-increase');
   const themeInput = document.getElementById('theme-input');
+  const modeInput = document.getElementById('mode-input');
   const soundToggle = document.getElementById('sound-toggle');
 
   const themeMap = {
     original: 'theme-original',
     amber: 'theme-amber',
     modern: 'theme-modern',
-    vintage: 'theme-vintage'
+    vintage: 'theme-vintage',
+    steampunk: 'theme-steampunk'
   };
 
   if (!window.CTR || typeof window.CTR.SolariBoard !== 'function') {
@@ -80,9 +82,10 @@ window.addEventListener('load', () => {
   let currentSpeed = parseFloat(speedInput?.value || '4') || 4;
   let currentLetterHeight = parseInt(heightInput?.value || '50', 10) || 50;
   let currentTheme = themeInput?.value || 'original';
+  let currentMode = modeInput?.value || 'splitflap';
   let currentPlaybackMode = 'all-at-once';
-  let multiBoard = null;
-  let boardConfigKey = '';
+  let modeBoard = null;
+  let modeBoardConfigKey = '';
   let lastRenderedRowCount = 1;
   let lastMessageText = DEFAULT_MESSAGE;
 
@@ -104,6 +107,53 @@ window.addEventListener('load', () => {
     document.body.dataset.theme = nextTheme;
   }
 
+  function clearModeBoardPending() {
+    if (modeBoard && typeof modeBoard.clearPendingUpdates === 'function') {
+      modeBoard.clearPendingUpdates();
+    }
+  }
+
+  function isAudioModeEnabled() {
+    return currentMode === 'splitflap';
+  }
+
+
+  function ensureCoreModeBoard(rows, cols, mode) {
+    const rowCount = Math.max(1, rows);
+    const colCount = Math.max(1, cols);
+    const configKey = `${mode}|${rowCount}|${colCount}|${currentLetterHeight}|${currentSpeed}`;
+
+    if (modeBoard && configKey === modeBoardConfigKey) {
+      return modeBoard;
+    }
+
+    clearModeBoardPending();
+
+    boardContainer.innerHTML = '';
+    boardContainer.classList.remove('display-mode-glow');
+    boardContainer.style.removeProperty('--glow-cell-w');
+    boardContainer.style.removeProperty('--glow-cell-h');
+    boardContainer.style.removeProperty('--mode-duration-ms');
+
+    modeBoard = new window.CTR.MultiRowDisplayBoard({
+      container: boardContainer,
+      mode,
+      rows: rowCount,
+      cols: colCount,
+      segmentWidth: getSegmentWidth(currentLetterHeight),
+      segmentHeight: currentLetterHeight,
+      fontSize: Math.round(currentLetterHeight * 0.83),
+      rowGap: 3,
+      speedMultiplier: currentSpeed,
+      onSegmentUpdate(rowIndex, segmentIndex) {
+        lastSegmentUpdateAt = performance.now();
+      }
+    });
+
+    modeBoardConfigKey = configKey;
+    return modeBoard;
+  }
+
   function wordWrap(text, cols) {
     const words = text.split(' ');
     const lines = [];
@@ -123,31 +173,13 @@ window.addEventListener('load', () => {
     return lines;
   }
 
-  function ensureMultiBoard(rows, cols) {
-    const rowCount = Math.max(1, rows);
-    const colCount = Math.max(1, cols);
-    const configKey = `${rowCount}|${colCount}|${currentLetterHeight}|${currentSpeed}`;
+  function ensureBoard(rows, cols) {
+    const mode = ['splitflap', 'nixie', 'panaplex7', 'panaplex14'].includes(currentMode) ? currentMode : 'splitflap';
+    return ensureCoreModeBoard(rows, cols, mode);
+  }
 
-    if (multiBoard && configKey === boardConfigKey) {
-      return multiBoard;
-    }
-
-    boardContainer.innerHTML = '';
-    multiBoard = new window.CTR.MultiRowSolariBoard({
-      container: boardContainer,
-      rows: rowCount,
-      cols: colCount,
-      segmentWidth: getSegmentWidth(currentLetterHeight),
-      segmentHeight: currentLetterHeight,
-      fontSize: Math.round(currentLetterHeight * 0.83),
-      rowGap: 3,
-      speedMultiplier: currentSpeed,
-      onSegmentUpdate() {
-        lastSegmentUpdateAt = performance.now();
-      }
-    });
-    boardConfigKey = configKey;
-    return multiBoard;
+  function getActiveBoard() {
+    return modeBoard;
   }
 
   const applySpeedFromInput = () => {
@@ -187,7 +219,7 @@ window.addEventListener('load', () => {
     });
     lastRenderedRowCount = Math.max(1, lines.length);
     const sequential = currentPlaybackMode === 'sequential';
-    const board = ensureMultiBoard(lines.length, cols);
+    const board = ensureBoard(lines.length, cols);
     board.setAllRowsDiff(lines, {
       sequential,
       rowDelayMs: 1500
@@ -203,7 +235,7 @@ window.addEventListener('load', () => {
   };
 
   const startSoundWatchdog = () => {
-    if (!soundEnabled) return;
+    if (!soundEnabled || !isAudioModeEnabled()) return;
 
     stopSoundWatchdog();
 
@@ -269,6 +301,15 @@ window.addEventListener('load', () => {
     applyTheme(themeInput.value);
   });
 
+  modeInput?.addEventListener('change', () => {
+    const mode = modeInput.value;
+    currentMode = ['splitflap', 'nixie', 'panaplex7', 'panaplex14'].includes(mode) ? mode : 'splitflap';
+    if (!isAudioModeEnabled()) {
+      stopSoundWatchdog();
+    }
+    setMessage(lastMessageText);
+  });
+
   soundToggle?.addEventListener('change', event => {
     soundEnabled = event.target.checked;
     if (!soundEnabled) stopSoundWatchdog();
@@ -278,13 +319,14 @@ window.addEventListener('load', () => {
     event.preventDefault();
     const text = input.value || DEFAULT_MESSAGE;
 
-    if (!soundEnabled) {
+    if (!soundEnabled && isAudioModeEnabled()) {
       initSoundPool();
       soundEnabled = true;
     }
 
-    if (multiBoard && typeof multiBoard.clearPendingUpdates === 'function') {
-      multiBoard.clearPendingUpdates();
+    const activeBoard = getActiveBoard();
+    if (activeBoard && typeof activeBoard.clearPendingUpdates === 'function') {
+      activeBoard.clearPendingUpdates();
     }
     setMessage(text);
     startSoundWatchdog();

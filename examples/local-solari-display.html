@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Local Solari Display | SolariDisplay Example</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;700&family=Oswald:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../build/SolariBoard.css" />
     <link rel="stylesheet" href="local-solari-display.css" />
   </head>
@@ -15,6 +15,10 @@
         <p>Type a message and watch it flip.</p>
       </header>
       <main class="main">
+        <div class="board-header" aria-label="Board header">
+          <span class="board-header-title">Foreign Exchange Board</span>
+          <span class="board-header-subtitle">Live exchange rates</span>
+        </div>
         <div id="board" class="solari-board"></div>
         <form id="message-form" class="message-form">
           <label for="message-input">Message</label>
@@ -53,6 +57,16 @@
               <option value="amber">Old Amber</option>
               <option value="modern">Modern</option>
               <option value="vintage">Vintage</option>
+              <option value="steampunk">Steampunk</option>
+            </select>
+          </div>
+          <div class="mode-control">
+            <label for="mode-input">Display</label>
+            <select id="mode-input">
+              <option value="splitflap" selected>Split Flap</option>
+              <option value="nixie">Nixie</option>
+              <option value="panaplex7">Panaplex 7</option>
+              <option value="panaplex14">Panaplex 14</option>
             </select>
           </div>
           <div class="playback-control">

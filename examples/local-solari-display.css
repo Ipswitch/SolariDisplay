@@ -73,6 +73,22 @@ body[data-theme="vintage"] {
   --chrome-button-bottom: #caa96e;
 }
 
+body[data-theme="steampunk"] {
+  background:
+    radial-gradient(circle at 15% 12%, rgba(185, 117, 44, 0.2), transparent 40%),
+    radial-gradient(circle at 82% 78%, rgba(92, 62, 29, 0.28), transparent 42%),
+    linear-gradient(180deg, #27180f 0%, #140d08 52%, #090603 100%);
+  --chrome-panel: rgba(38, 23, 14, 0.94);
+  --chrome-panel-border: #ad7a3f;
+  --chrome-panel-text: #f0dec0;
+  --chrome-label: #cfab7b;
+  --chrome-input-bg: #1a1009;
+  --chrome-input-border: #5f3d1f;
+  --chrome-accent: #e0a24e;
+  --chrome-button-top: #d7a15f;
+  --chrome-button-bottom: #a46a2f;
+}
+
 .page {
   width: 100%;
   max-width: 1200px;
@@ -99,6 +115,34 @@ body[data-theme="vintage"] {
   flex-direction: column;
   gap: 16px;
 }
+
+.board-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border: 2px solid var(--board-border, #9d7a43);
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--board-bg-top, #171717) 0%, var(--board-bg-bottom, #090909) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 18px rgba(0, 0, 0, 0.35);
+}
+
+.board-header-title {
+  font-family: 'Oswald', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tile-text, #f2e8c6);
+}
+
+.board-header-subtitle {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--chrome-label, #aaa);
+}
 .solari-board table {
   border-collapse: collapse;
   width: 100%;
@@ -111,6 +155,7 @@ body[data-theme="vintage"] {
 
 .solari-board {
   padding: 4px;
+  padding-bottom: 18px;
   border-radius: 8px;
   --board-bg-top: #171717;
   --board-bg-bottom: #090909;
@@ -128,6 +173,7 @@ body[data-theme="vintage"] {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow: visible;
 }
 
 .solari-board[data-theme="amber"] {
@@ -172,6 +218,21 @@ body[data-theme="vintage"] {
   --tile-front-bottom: #171b20;
   --tile-back-top: #111419;
   --tile-back-bottom: #0b0d10;
+}
+
+.solari-board[data-theme="steampunk"] {
+  --board-bg-top: #2a180e;
+  --board-bg-bottom: #120a06;
+  --board-border: #b57e3f;
+  --tile-text: #f6dfb2;
+  --tile-front-top: #5b3a21;
+  --tile-front-bottom: #2d1b10;
+  --tile-back-top: #2a170d;
+  --tile-back-bottom: #140c07;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 180, 0.07),
+    0 0 22px rgba(158, 94, 30, 0.28),
+    0 0 36px rgba(0, 0, 0, 0.75);
 }
 
 .board-row {
@@ -267,6 +328,12 @@ body[data-theme="vintage"] {
   gap: 6px;
 }
 
+.mode-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .theme-control select {
   min-width: 140px;
   padding: 8px 10px;
@@ -276,7 +343,22 @@ body[data-theme="vintage"] {
   color: var(--chrome-panel-text);
 }
 
+.mode-control select {
+  min-width: 130px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--chrome-input-border);
+  background: var(--chrome-input-bg);
+  color: var(--chrome-panel-text);
+}
+
 .theme-control select:focus {
+  outline: none;
+  border-color: var(--chrome-accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--chrome-accent) 35%, transparent);
+}
+
+.mode-control select:focus {
   outline: none;
   border-color: var(--chrome-accent);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--chrome-accent) 35%, transparent);

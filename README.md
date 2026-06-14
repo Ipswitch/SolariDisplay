@@ -95,6 +95,49 @@ window.addEventListener( 'load', function() { // once the page loads
 
 The local app example in this workspace also lives at `examples/local-solari-display.html`, and it is self-contained inside `examples/` via `examples/local-solari-display.css`, `examples/local-solari-display.js`, and `examples/one_flip.mp3`. It loads the built library from `build/SolariBoard.min.js`.
 
+#### Multi-row mode API ####
+
+For multi-row displays with mode switching, use `CTR.MultiRowDisplayBoard`.
+
+Built-in modes:
+
+- `splitflap` (default)
+- `nixie` (curved SVG glyph renderer)
+- `panaplex7` (7-segment plasma-style renderer)
+- `panaplex14` (14-segment alphanumeric plasma-style renderer)
+
+Core methods:
+
+- `setMode(mode)`
+- `setAllRows(lines)`
+- `setAllRowsDiff(lines, { sequential, rowDelayMs })`
+- `resize(rows, cols)`
+- `clearPendingUpdates()`
+
+Example:
+
+```js
+const board = new CTR.MultiRowDisplayBoard({
+	container,
+	mode: 'nixie',
+	rows: 4,
+	cols: 24,
+	segmentWidth: 29,
+	segmentHeight: 50,
+	speedMultiplier: 4,
+	rowGap: 3
+});
+
+board.setAllRowsDiff([
+	'USD$    1.0000',
+	'EUR€    0.8645',
+	'JPY¥  160.2327',
+	'AS OF 2026-06-14 UTC'
+], { sequential: false });
+```
+
+Custom mode renderers can be provided via `renderers` in settings. Each renderer factory must return an object with at least `setAllRowsDiff(lines, options)`.
+
 #### License ####
 
 MIT licensed
