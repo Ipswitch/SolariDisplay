@@ -11,22 +11,93 @@
 		<script src="main.js"></script>
 		<style>
 			*{ margin: 0; padding: 0; box-sizing: border-box; moz-box-sizing: boder-box;}
-			body { background-color: #000; background-image: url(real_cf.png); overflow: hidden; }
+			body {
+				background-color: #000;
+				background-image: url(real_cf.png);
+				overflow: hidden;
+				min-height: 100vh;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				--tile-text: #d3d6da;
+				--tile-front-top: #2d3034;
+				--tile-front-bottom: #1f2226;
+				--tile-back-top: #1b1e22;
+				--tile-back-bottom: #14161a;
+				--title-color: #f3f4f6;
+			}
+			body[data-theme="original"] {
+				--tile-text: #d3d6da;
+				--tile-front-top: #2d3034;
+				--tile-front-bottom: #1f2226;
+				--tile-back-top: #1b1e22;
+				--tile-back-bottom: #14161a;
+				--title-color: #f3f4f6;
+			}
+			body[data-theme="amber"] {
+				--tile-text: #ffd36c;
+				--tile-front-top: #5b3511;
+				--tile-front-bottom: #311b08;
+				--tile-back-top: #241307;
+				--tile-back-bottom: #120904;
+				--title-color: #ffd98f;
+			}
+			body[data-theme="modern"] {
+				--tile-text: #dce6ef;
+				--tile-front-top: #2b3138;
+				--tile-front-bottom: #171b20;
+				--tile-back-top: #111419;
+				--tile-back-bottom: #0b0d10;
+				--title-color: #e5ecf3;
+			}
+			body[data-theme="vintage"] {
+				--tile-text: #efe4c8;
+				--tile-front-top: #3a342a;
+				--tile-front-bottom: #241f18;
+				--tile-back-top: #1c1813;
+				--tile-back-bottom: #11100d;
+				--title-color: #f2ead6;
+			}
 			a { color: #ffffff; }
-			#title, #subtitle{ position: absolute; font-family: 'Oswald'; left: 50%; top: 50%; color: white; }
-			#title{ font-size: 60px; text-align: left; margin-top: -150px; margin-left: -330px;}
-			#subtitle{ font-size: 40px; text-align: right; margin-top: 130px; margin-left: -150px;}
-			#viewport{  position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
-			#container{ position: absolute; left: 0; top: 0; right: 0; bottom: 0; font-family: 'Oswald', sans-serif; }
+			.clock-shell {
+				width: min(1200px, 94vw);
+				height: min(760px, 92vh);
+				display: flex;
+				flex-direction: column;
+				align-items: stretch;
+				justify-content: center;
+				gap: 28px;
+			}
+			#title, #subtitle{ position: relative; font-family: 'Oswald'; color: white; margin: 0; }
+			#title, #subtitle { color: var(--title-color); }
+			#title{ font-size: 60px; text-align: left; padding-left: 32px; }
+			#subtitle{ font-size: 40px; text-align: right; padding-right: 32px; }
+			#viewport{ position: relative; width: 100%; max-width: 980px; height: 180px; }
+			#container{ position: relative; width: 100%; height: 100%; font-family: 'Oswald', sans-serif; }
+			#container .segment { color: var(--tile-text); }
+			#container .segment .front,
+			#container .segment .flip-front {
+				background-image: linear-gradient(180deg, var(--tile-front-top) 0%, var(--tile-front-bottom) 100%);
+			}
+			#container .segment .back,
+			#container .segment .flip-back {
+				background-image: linear-gradient(180deg, var(--tile-back-top) 0%, var(--tile-back-bottom) 100%);
+			}
+			#container .display {
+				left: 50% !important;
+				top: 50% !important;
+				transform: translate(-50%, -50%) scale(var(--clock-scale, 1));
+				transform-origin: 50% 50%;
+			}
 		</style>
 	</head>
 	<body>
-
-		<div id="viewport" class="displayBase">
-			<div id="container" >
+		<div class="clock-shell">
 			<p id="title" >The time is</p>
-			<p id="subtitle"><i>brought to you by</i><br/><a href="//www.clicktorelease.com/blog/split-flap-display">CSS 3D Split-Flap Display</a></p>
+			<div id="viewport" class="displayBase">
+				<div id="container"></div>
 			</div>
+			<p id="subtitle"><i>brought to you by</i><br/><a href="//www.clicktorelease.com/blog/split-flap-display">CSS 3D Split-Flap Display</a></p>
 		</div>
 
 		<script>
@@ -34,8 +105,37 @@
 		'use strict'
 
 		var startTime = Date.now();
+		var themes = [ 'original', 'amber', 'modern', 'vintage' ];
+
+		function applyThemeFromQuery() {
+			var params = new URLSearchParams( window.location.search );
+			var theme = params.get( 'theme' );
+			if ( themes.indexOf( theme ) === -1 ) theme = 'original';
+			document.body.dataset.theme = theme;
+		}
+
+		function cycleTheme() {
+			var current = document.body.dataset.theme || 'original';
+			var idx = themes.indexOf( current );
+			idx = ( idx + 1 ) % themes.length;
+			document.body.dataset.theme = themes[ idx ];
+		}
+
+		function fitDisplayScale() {
+			var viewportEl = document.getElementById( 'viewport' );
+			var displayEl = document.querySelector( '#container .display' );
+			if ( !viewportEl || !displayEl ) return;
+
+			var availableWidth = Math.max( 0, viewportEl.clientWidth - 24 );
+			var boardWidth = displayEl.offsetWidth || parseFloat( getComputedStyle( displayEl ).width ) || 0;
+			if ( !boardWidth ) return;
+
+			var scale = Math.min( 1, availableWidth / boardWidth );
+			container.style.setProperty( '--clock-scale', scale.toFixed( 4 ) );
+		}
 
 		window.addEventListener( 'load', function() {
+			applyThemeFromQuery();
 
 			display = new CTR.SolariBoard( {
 				container: container,
@@ -46,6 +146,11 @@
 			} );
 
 			update();
+			fitDisplayScale();
+			window.addEventListener( 'resize', fitDisplayScale );
+			window.addEventListener( 'keydown', function( e ) {
+				if ( e.key === 't' || e.key === 'T' ) cycleTheme();
+			} );
 
 		}, false );
 

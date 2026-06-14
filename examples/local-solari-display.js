@@ -184,7 +184,11 @@ window.addEventListener('load', () => {
     const boardPad = parseFloat(getComputedStyle(boardContainer).paddingLeft) + parseFloat(getComputedStyle(boardContainer).paddingRight);
     const usableWidth = boardContainer.clientWidth - boardPad - FRAME_PADDING - EDGE_BLEED;
     const cols = Math.max(8, Math.floor(usableWidth / segmentCell));
-    const lines = wordWrap(upper, cols);
+    const explicitLines = upper.split(/\r?\n/);
+    const lines = explicitLines.flatMap((line) => {
+      if (!line.trim()) return [' '];
+      return wordWrap(line, cols);
+    });
     const sequential = currentPlaybackMode === 'sequential';
     rebuildBoard(lines, sequential);
     applyTheme(currentTheme);

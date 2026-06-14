@@ -34,6 +34,10 @@ window.addEventListener( 'load', function() {
 
 	window.addEventListener( 'mousemove', function( e ) {
 
+		if ( !( e.shiftKey || e.ctrlKey || e.metaKey ) ) {
+			return;
+		}
+
 		var 
 			x = .1 * ( .5 * window.innerWidth - e.pageX ),
 			y = .1 * ( .5 * window.innerHeight - e.pageY );
