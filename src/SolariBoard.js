@@ -21,6 +21,8 @@ CTR.SolariSegment = function( settings ) {
 
 	function _init() {
 
+		var halfHeight = .5 * _settings.height;
+
 		_li = document.createElement( 'li' );
 		_li.className = 'segment';
 		_li.style.width = _settings.width + 'px';
@@ -28,19 +30,27 @@ CTR.SolariSegment = function( settings ) {
 
 		_front = document.createElement( 'div' );
 		_front.className = 'front';
+		_front.style.height = halfHeight + 'px';
 		_front.style.lineHeight = _settings.height + 'px';
 
 		_flipFront = document.createElement( 'div' );
 		_flipFront.className = 'flip-front';
+		_flipFront.style.top = halfHeight + 'px';
+		_flipFront.style.height = halfHeight + 'px';
+		_flipFront.style.lineHeight = '0px';
 		_flipFront.style.webkitTransformOrigin = _flipFront.style.MozTransformOrigin = '0 ' + .5 * _settings.height + 'px';
 		
 		_flipBack = document.createElement( 'div' );
 		_flipBack.className = 'flip-back';
+		_flipBack.style.height = halfHeight + 'px';
 		_flipBack.style.lineHeight = _settings.height + 'px';
 		_flipBack.style.webkitTransformOrigin = _flipBack.style.MozTransformOrigin = '0 ' + .5 * _settings.height + 'px';
 		
 		_back = document.createElement( 'div' );
 		_back.className = 'back';
+		_back.style.top = halfHeight + 'px';
+		_back.style.height = halfHeight + 'px';
+		_back.style.lineHeight = '0px';
 		
 		_li.appendChild( _front );
 		_li.appendChild( _flipFront );
@@ -82,8 +92,8 @@ CTR.SolariSegment = function( settings ) {
 			_startTime = time;
 			if( _angle >= 180 ) _angle = 180;
 
-			//_back.textContent = _values[ _currentValue ];
-			//_flipBack.textContent = _values[ _currentValue ];
+			_back.textContent = _values[ _currentValue ];
+			_flipBack.textContent = _values[ _currentValue ];
 			_front.textContent = _values[ _currentValue ];
 			_flipFront.textContent = _values[ _currentValue ];
 
@@ -135,7 +145,9 @@ CTR.SolariSegment = function( settings ) {
 
 CTR.SOLARIVALUES = {
 	letter: [ 
-		' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 
+		' ', '.', ',', '!', '?', ':', ';', '-', '\'', '"', '/', '&', '(', ')',
+		'$', '£', '€', '¥', '₹', '₩',
+		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 
 		'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 
 		'T', 'U', 'V', 'W', 'X', 'Y', 'Z' 
 	],
@@ -193,9 +205,17 @@ CTR.SolariBoard = function( settings ) {
 	function _addSegment( valueSet, index ) {
 
 		var v = valueSet;
-		// In this build we treat each segment as exactly one character
-		// wide, so every entry in _format becomes one independent tile.
+		// Size each tile based on the longest token in its value set
+		// so multi-character sets (e.g. hour/minute) do not clip.
 		var charWidth = _segmentWidth;
+		if ( Array.isArray( v ) ) {
+			var maxChars = 1;
+			for ( var i = 0; i < v.length; i++ ) {
+				var tokenLen = String( v[ i ] ).length;
+				if ( tokenLen > maxChars ) maxChars = tokenLen;
+			}
+			charWidth = _segmentWidth * maxChars;
+		}
 		var segment = new CTR.SolariSegment( {
 			width: charWidth,
 			height: _segmentHeight,

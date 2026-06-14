@@ -10,8 +10,13 @@ Forks, pull requests and code critiques are welcome!
 
 - `examples/basic.html` - minimal board demo
 - `examples/text-display.html` - keyboard-driven text demo
-- `examples/single-digit-clock.html` and `examples/double-digit-clock.html` - clock demos
+- `examples/single-digit-clock.html` and `examples/double-digit-clock.html` - clock demos with responsive scaling and theme support
 - `examples/local-solari-display.html` - the packaged local app page with themes, playback controls, and sound toggle
+
+Clock example themes:
+
+- URL query: `?theme=original|amber|modern|vintage`
+- Keyboard shortcut: press `T` to cycle themes
 
 #### Using the code ####
 
@@ -53,7 +58,7 @@ window.addEventListener( 'load', function() { // once the page loads
 		format - an array of either a single character or an array of characters. 
 			The length of this format array is the number of segments.
 			There are several defines ready to use:
-				CTR.SOLARIVALUES.letter: A to Z and space
+				CTR.SOLARIVALUES.letter: space, punctuation, common currency symbols, and A to Z
 				CTR.SOLARIVALUES.number: 0 to 9
 				CTR.SOLARIVALUES.hour: 00 to 23
 				CTR.SOLARIVALUES.minute: 00 to 59
@@ -88,7 +93,7 @@ window.addEventListener( 'load', function() { // once the page loads
 }, false );
 ```
 
-The local app example in this workspace also lives at `examples/local-solari-display.html`, and it is self-contained inside `examples/` via `examples/local-solari-display.css`, `examples/local-solari-display.js`, and `examples/one_flip.mp3`. It still loads the Solari library source from `src/SolariBoard.js`.
+The local app example in this workspace also lives at `examples/local-solari-display.html`, and it is self-contained inside `examples/` via `examples/local-solari-display.css`, `examples/local-solari-display.js`, and `examples/one_flip.mp3`. It loads the built library from `build/SolariBoard.min.js`.
 
 #### License ####
 
