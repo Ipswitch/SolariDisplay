@@ -81,8 +81,8 @@ window.addEventListener('load', () => {
   let currentLetterHeight = parseInt(heightInput?.value || '50', 10) || 50;
   let currentTheme = themeInput?.value || 'original';
   let currentPlaybackMode = 'all-at-once';
-  let sequentialTimeoutId = null;
-  let boardRows = [];
+  let multiBoard = null;
+  let boardConfigKey = '';
   let lastRenderedRowCount = 1;
   let lastMessageText = DEFAULT_MESSAGE;
 
@@ -123,44 +123,31 @@ window.addEventListener('load', () => {
     return lines;
   }
 
-  function rebuildBoard(lines, sequential = false) {
-    boardRows.forEach(row => row.container.remove());
-    boardRows = [];
+  function ensureMultiBoard(rows, cols) {
+    const rowCount = Math.max(1, rows);
+    const colCount = Math.max(1, cols);
+    const configKey = `${rowCount}|${colCount}|${currentLetterHeight}|${currentSpeed}`;
 
-    const rowHeight = currentLetterHeight + 3;
-    const fontSize = Math.round(currentLetterHeight * 0.83);
-    const segmentWidth = getSegmentWidth(currentLetterHeight);
+    if (multiBoard && configKey === boardConfigKey) {
+      return multiBoard;
+    }
 
-    lines.forEach((lineText, index) => {
-      const rowCols = Math.max(1, lineText.length);
-      const rowEl = document.createElement('div');
-      rowEl.className = 'board-row';
-      rowEl.style.height = `${rowHeight}px`;
-      boardContainer.appendChild(rowEl);
-
-      const rowDisplay = new window.CTR.SolariBoard({
-        container: rowEl,
-        format: Array(rowCols).fill(window.CTR.SOLARIVALUES.letter),
-        segmentWidth,
-        segmentHeight: currentLetterHeight,
-        fontSize,
-        speedMultiplier: currentSpeed,
-        onSegmentUpdate() {
-          lastSegmentUpdateAt = performance.now();
-        }
-      });
-
-      boardRows.push({ container: rowEl, display: rowDisplay });
-
-      if (sequential) {
-        const delay = index * 1500;
-        sequentialTimeoutId = setTimeout(() => {
-          rowDisplay.setContent(lineText);
-        }, delay);
-      } else {
-        rowDisplay.setContent(lineText);
+    boardContainer.innerHTML = '';
+    multiBoard = new window.CTR.MultiRowSolariBoard({
+      container: boardContainer,
+      rows: rowCount,
+      cols: colCount,
+      segmentWidth: getSegmentWidth(currentLetterHeight),
+      segmentHeight: currentLetterHeight,
+      fontSize: Math.round(currentLetterHeight * 0.83),
+      rowGap: 3,
+      speedMultiplier: currentSpeed,
+      onSegmentUpdate() {
+        lastSegmentUpdateAt = performance.now();
       }
     });
+    boardConfigKey = configKey;
+    return multiBoard;
   }
 
   const applySpeedFromInput = () => {
@@ -200,7 +187,11 @@ window.addEventListener('load', () => {
     });
     lastRenderedRowCount = Math.max(1, lines.length);
     const sequential = currentPlaybackMode === 'sequential';
-    rebuildBoard(lines, sequential);
+    const board = ensureMultiBoard(lines.length, cols);
+    board.setAllRowsDiff(lines, {
+      sequential,
+      rowDelayMs: 1500
+    });
     applyTheme(currentTheme);
   };
 
@@ -292,7 +283,9 @@ window.addEventListener('load', () => {
       soundEnabled = true;
     }
 
-    if (sequentialTimeoutId) clearTimeout(sequentialTimeoutId);
+    if (multiBoard && typeof multiBoard.clearPendingUpdates === 'function') {
+      multiBoard.clearPendingUpdates();
+    }
     setMessage(text);
     startSoundWatchdog();
   });

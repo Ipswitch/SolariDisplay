@@ -321,13 +321,34 @@ CTR.MultiRowSolariBoard = function( settings ) {
 	var _onSegmentUpdate = typeof _settings.onSegmentUpdate === 'function' ? _settings.onSegmentUpdate : null;
 
 	var _rowBoards = [];
+	var _lineState = [];
+	var _pendingTimeouts = [];
+
+	function _clearPending() {
+		for ( var i = 0; i < _pendingTimeouts.length; i++ ) {
+			clearTimeout( _pendingTimeouts[ i ] );
+		}
+		_pendingTimeouts = [];
+	}
+
+	function _normalizeLine( text ) {
+		var value = String( text || '' ).toUpperCase();
+		if ( value.length < _cols ) {
+			while ( value.length < _cols ) value += ' ';
+		} else if ( value.length > _cols ) {
+			value = value.substr( 0, _cols );
+		}
+		return value;
+	}
 
 	function _build() {
+		_clearPending();
 		// Clear existing
 		while ( _container.firstChild ) {
 			_container.removeChild( _container.firstChild );
 		}
 		_rowBoards = [];
+		_lineState = [];
 		_container.style.position = 'relative';
 
 		for ( var r = 0; r < _rows; r++ ) {
@@ -364,25 +385,71 @@ CTR.MultiRowSolariBoard = function( settings ) {
 
 		// Set container height to fit all rows.
 		_container.style.height = ( _rows * _segmentHeight + ( _rows - 1 ) * _rowGap ) + 'px';
+		for ( var i = 0; i < _rows; i++ ) {
+			_lineState.push( _normalizeLine( '' ) );
+		}
 	}
 
 	function _setRowContent( rowIndex, text ) {
 		if ( rowIndex < 0 || rowIndex >= _rowBoards.length ) return;
 		var board = _rowBoards[ rowIndex ];
-		var value = String( text || '' ).toUpperCase();
-		if ( value.length < _cols ) {
-			while ( value.length < _cols ) value += ' ';
-		} else if ( value.length > _cols ) {
-			value = value.substr( 0, _cols );
-		}
+		var value = _normalizeLine( text );
 		board.setContent( value );
+		_lineState[ rowIndex ] = value;
 	}
 
 	function _setAllRows( lines ) {
+		_clearPending();
 		lines = lines || [];
 		for ( var r = 0; r < _rows; r++ ) {
 			_setRowContent( r, lines[ r ] || '' );
 		}
+	}
+
+	function _setAllRowsDiff( lines, options ) {
+		_clearPending();
+		lines = lines || [];
+		options = options || {};
+		var sequential = !!options.sequential;
+		var rowDelayMs = typeof options.rowDelayMs === 'number' ? options.rowDelayMs : 1500;
+
+		var changedRows = [];
+		for ( var r = 0; r < _rows; r++ ) {
+			var next = _normalizeLine( lines[ r ] || '' );
+			if ( _lineState[ r ] !== next ) {
+				changedRows.push({ row: r, value: next });
+			}
+		}
+
+		if ( !changedRows.length ) return;
+
+		if ( sequential ) {
+			for ( var i = 0; i < changedRows.length; i++ ) {
+				(function(order, item){
+					var timeoutId = setTimeout(function(){
+						_rowBoards[ item.row ].setContent( item.value );
+						_lineState[ item.row ] = item.value;
+					}, order * rowDelayMs);
+					_pendingTimeouts.push( timeoutId );
+				})(i, changedRows[i]);
+			}
+			return;
+		}
+
+		for ( var j = 0; j < changedRows.length; j++ ) {
+			var item = changedRows[ j ];
+			_rowBoards[ item.row ].setContent( item.value );
+			_lineState[ item.row ] = item.value;
+		}
+	}
+
+	function _resize( rows, cols ) {
+		rows = rows || 1;
+		cols = cols || 1;
+		if ( rows === _rows && cols === _cols ) return;
+		_rows = rows;
+		_cols = cols;
+		_build();
 	}
 
 	function _getRows() { return _rows; }
@@ -393,6 +460,9 @@ CTR.MultiRowSolariBoard = function( settings ) {
 	return {
 		setRowContent: _setRowContent,
 		setAllRows: _setAllRows,
+		setAllRowsDiff: _setAllRowsDiff,
+		resize: _resize,
+		clearPendingUpdates: _clearPending,
 		getRows: _getRows,
 		getCols: _getCols
 	};
